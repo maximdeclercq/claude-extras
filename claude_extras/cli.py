@@ -24,11 +24,13 @@ LOG_KEEP = 2000
 # Verb to the module that implements it. One table, so a verb cannot exist in the
 # dispatch list and nowhere else.
 MODULES = {
+    "usage": "usage",
+    "status": "status",
 }
 
 # Short forms for the verbs typed most often. One letter each, and only where the
 # letter is unambiguous across the whole set.
-ALIASES = {}
+ALIASES = {"u": "usage"}
 
 
 def die(message, code=1):
