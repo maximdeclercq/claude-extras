@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.egg-info/
+.ruff_cache/
+.pytest_cache/
+.venv/
+build/
+dist/
+
+# mkdocs output
+site/
+
+# Editor / OS
+*.swp
+.DS_Store
+
+# Local Claude session state
+.claude/
+
+# uv resolves from pyproject; the lock is not part of what ships
+uv.lock
+
+.idea/
