@@ -24,6 +24,7 @@ LOG_KEEP = 2000
 # Verb to the module that implements it. One table, so a verb cannot exist in the
 # dispatch list and nowhere else.
 MODULES = {
+    "auth": "auth",
     "usage": "usage",
     "status": "status",
 }
