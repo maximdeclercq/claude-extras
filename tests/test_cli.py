@@ -217,7 +217,7 @@ def test_our_verbs_are_still_intercepted_without_it(monkeypatch):
     assert cli.main(["usage", "--json"]) == ("usage", ["--json"])
 
 
-@pytest.mark.parametrize("short,full", [("u", "usage")])
+@pytest.mark.parametrize("short,full", [("r", "resume"), ("u", "usage")])
 def test_one_letter_aliases_reach_their_verb(short, full, monkeypatch):
     monkeypatch.setattr(cli, "launch", lambda argv: pytest.fail("should not exec"))
     monkeypatch.setattr(cli, "dispatch", lambda name, rest: (name, rest))

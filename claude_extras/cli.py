@@ -26,12 +26,13 @@ LOG_KEEP = 2000
 MODULES = {
     "auth": "auth",
     "usage": "usage",
+    "resume": "resume",
     "status": "status",
 }
 
 # Short forms for the verbs typed most often. One letter each, and only where the
 # letter is unambiguous across the whole set.
-ALIASES = {"u": "usage"}
+ALIASES = {"r": "resume", "u": "usage"}
 
 
 def die(message, code=1):
