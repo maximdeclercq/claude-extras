@@ -27,6 +27,7 @@ MODULES = {
     "auth": "auth",
     "usage": "usage",
     "resume": "resume",
+    "spawn": "spawn",
     "status": "status",
 }
 
