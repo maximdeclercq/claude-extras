@@ -29,12 +29,13 @@ MODULES = {
     "resume": "resume",
     "chat": "chat",
     "spawn": "spawn",
+    "search": "search",
     "status": "status",
 }
 
 # Short forms for the verbs typed most often. One letter each, and only where the
 # letter is unambiguous across the whole set.
-ALIASES = {"r": "resume", "c": "chat", "u": "usage"}
+ALIASES = {"r": "resume", "s": "search", "c": "chat", "u": "usage"}
 
 
 def die(message, code=1):
