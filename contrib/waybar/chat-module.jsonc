@@ -1,0 +1,26 @@
+// A status bar button that starts a chat in the right account.
+//
+// chat-button.py asks `claude chat account` which account a new chat would land
+// in, the same resolution a click uses, so the bar cannot promise one account and
+// deliver another. Left click starts a chat there, middle click picks the account
+// first, right click lists past chats too, both through chat-menu.py.
+//
+// Merge into ~/.config/waybar/config and add "custom/chat" to a modules list.
+//
+// The icon is U+2733, the mark Claude Code itself prints, followed by U+FE0E.
+// That variation selector asks for text presentation: without it the glyph is
+// liable to come from a colour emoji font, which renders in its own colours and
+// ignores the CSS below. Drop CLAUDE_CHAT_ICON entirely to show the account name
+// instead of a glyph.
+{
+  "custom/chat": {
+    "format": "{}",
+    "exec": "CLAUDE_CHAT_ICON='✳︎' .../waybar/chat-button.py",
+    "return-type": "json",
+    "interval": 5,
+    "tooltip": true,
+    "on-click": "claude chat new",
+    "on-click-right": ".../waybar/chat-menu.py",
+    "on-click-middle": ".../waybar/chat-menu.py --new"
+  }
+}
