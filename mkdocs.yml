@@ -1,0 +1,18 @@
+site_name: claude-extras
+site_url: https://maximdeclercq.github.io/claude-extras/
+repo_url: https://github.com/maximdeclercq/claude-extras
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+  features:
+    - content.code.copy
+nav:
+  - claude-extras: index.md
+  - Installation: install.md
+  - Accounts: accounts.md
+  - Commands: commands.md
+  - Architecture: architecture.md
