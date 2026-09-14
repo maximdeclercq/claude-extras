@@ -124,7 +124,7 @@ def search(scope, pattern, mine_only=False, limit=DEFAULT_LIMIT, under=None):
             hit = scan_file(path, pattern, raw, mine_only)
             if not hit:
                 continue
-            row = sessions.session_row(name, config_dir, path, mtime, logical)
+            row = sessions.session_row(name, config_dir, path, mtime, logical, under)
             if row is None:
                 continue
             rows.append({**row, "role": hit[0], "snippet": hit[1]})

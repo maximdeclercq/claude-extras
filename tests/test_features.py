@@ -94,6 +94,19 @@ def test_search_rejects_a_bad_limit():
         search.main(["--limit=0", "x"])
 
 
+def test_session_row_under_a_directory_excludes_its_siblings(tmp_path, monkeypatch):
+    """The encoded-name prefix that finds transcripts under ~/w/work also finds
+    ~/w/workspace, so the row itself has to check the real path."""
+    def meta(cwd):
+        return lambda path: {"cwd": cwd, "branch": "-", "title": "t", "is_resumable": True}
+
+    monkeypatch.setattr(sessions, "last_activity", lambda path: 1.0)
+    monkeypatch.setattr(sessions, "read_meta", meta("/w/workspace"))
+    assert sessions.session_row("a", tmp_path, tmp_path / "x.jsonl", 1.0, {}, under="/w/work") is None
+    monkeypatch.setattr(sessions, "read_meta", meta("/w/work/sub"))
+    assert sessions.session_row("a", tmp_path, tmp_path / "x.jsonl", 1.0, {}, under="/w/work")
+
+
 def test_resume_is_a_launch_in_the_session_directory(tmp_path, monkeypatch):
     """One launch path, so the account binding, the deny list and the launch log
     all apply to a resume exactly as they do to a bare `claude`."""

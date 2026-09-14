@@ -128,10 +128,13 @@ def load_logical_map(log_path):
     return out
 
 
-def session_row(name, config_dir, path, mtime, logical):
+def session_row(name, config_dir, path, mtime, logical, under=None):
     """One listing row, or None when the transcript is not a listable session."""
     meta = read_meta(path)
     if not meta or not meta["cwd"] or not meta["is_resumable"]:
+        return None
+    # The name prefix that found the file also matches siblings such as work-2
+    if under and not (meta["cwd"] == under or meta["cwd"].startswith(under + "/")):
         return None
     return {
         "account": name,
@@ -181,10 +184,8 @@ def sessions_for(name, config_dir, logical, want, under=None):
         # everything older behind it
         if want is not None and len(out) >= want and mtime <= min(r["activity"] for r in out):
             break
-        row = session_row(name, config_dir, path, mtime, logical)
+        row = session_row(name, config_dir, path, mtime, logical, under)
         if row is None:
-            continue
-        if under and not (row["real"] == under or row["real"].startswith(under + "/")):
             continue
         out.append(row)
         if want is not None and len(out) > want:

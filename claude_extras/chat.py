@@ -60,8 +60,10 @@ def chat_account(explicit=None):
     """Which account a chat belongs to."""
     if explicit:
         return explicit
+    from .cli import logical_cwd
+
     # A status bar has no directory of its own, so it falls through to the window.
-    for candidate in (os.environ.get("PWD") or os.getcwd(), spawn.focused_cwd()):
+    for candidate in (logical_cwd(), spawn.focused_cwd()):
         if not candidate:
             continue
         name = resolve_account(candidate)
