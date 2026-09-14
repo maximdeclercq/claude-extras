@@ -12,6 +12,7 @@ from .args import parse
 FLAGS = {"--account": str, "-a": "--account", "--resume": str}
 
 WINDOW_TITLE = "Claude Code"
+HYPRCTL_TIMEOUT = 2
 # A class of its own, so a compositor can route and exempt the window on an
 # identity the session does not rewrite on every turn the way it does the title.
 WINDOW_CLASS = "claude-code"
@@ -51,10 +52,11 @@ def focused_cwd():
         import json
 
         out = subprocess.run(
-            ["hyprctl", "activewindow", "-j"], capture_output=True, text=True, check=True
+            ["hyprctl", "activewindow", "-j"], capture_output=True, text=True, check=True,
+            timeout=HYPRCTL_TIMEOUT,
         )
         pid = json.loads(out.stdout).get("pid")
-    except (OSError, ValueError, subprocess.CalledProcessError):
+    except (OSError, ValueError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
         return None
     if not pid or pid < 1:
         return None

@@ -429,3 +429,26 @@ def test_is_live_counts_only_another_claude_session(tmp_path, monkeypatch):
     finally:
         bystander.kill()
         bystander.wait()
+
+
+def test_is_live_knows_a_native_install_session_by_its_binary(tmp_path, monkeypatch):
+    """The native installer's session runs a file named after its version, so
+    the command name is no use and the binary's directory is what identifies it."""
+    import shutil
+    import subprocess
+    import time
+
+    versions = tmp_path / "versions"
+    versions.mkdir()
+    binary = versions / "2.1.259"
+    shutil.copy(shutil.which("sleep"), binary)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("CLAUDE_REAL_BIN", "/opt/x/claude")
+    monkeypatch.setattr("claude_extras.cli.NATIVE_VERSIONS", versions)
+    session = subprocess.Popen([str(binary), "30"], cwd=tmp_path)
+    try:
+        time.sleep(0.05)
+        assert chats.is_live(tmp_path) is True
+    finally:
+        session.kill()
+        session.wait()

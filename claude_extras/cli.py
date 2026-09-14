@@ -21,6 +21,7 @@ from .args import take_value
 
 LOG_LIMIT = 5000
 LOG_KEEP = 2000
+NATIVE_VERSIONS = Path.home() / ".local" / "share" / "claude" / "versions"
 
 # Verb to the module that implements it. One table, so a verb cannot exist in the
 # dispatch list and nowhere else.
@@ -92,9 +93,9 @@ def newest_native_version():
     wrapper takes over, and it leaves a replaced launcher alone, so updates keep
     landing under versions/ and whatever sits at the launcher picks which one runs.
     """
-    versions = Path.home() / ".local" / "share" / "claude" / "versions"
     try:
-        candidates = [p for p in versions.iterdir() if p.is_file() and os.access(p, os.X_OK)]
+        candidates = [p for p in NATIVE_VERSIONS.iterdir()
+                      if p.is_file() and os.access(p, os.X_OK)]
     except OSError:
         return None
     numbered = [(tuple(int(x) for x in p.name.split(".")), p)

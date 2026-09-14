@@ -137,12 +137,18 @@ def _own_chain():
     return pids
 
 
-def _session_names():
-    """What a running Claude Code shows as its command name."""
-    from .cli import find_real_bin
+def _is_session(entry, real):
+    """Whether a /proc entry is a running Claude Code, by name or by binary.
 
-    found = find_real_bin()
-    return {"claude", Path(found).name} if found else {"claude"}
+    A native install runs the versioned file itself, so its command name is a
+    version number, and a session on an older version carries a different one.
+    """
+    from .cli import NATIVE_VERSIONS
+
+    if (entry / "comm").read_text().strip() == "claude":
+        return True
+    exe = Path(os.readlink(entry / "exe"))
+    return exe.parent == NATIVE_VERSIONS or exe == real
 
 
 def is_live(directory):
@@ -158,12 +164,15 @@ def is_live(directory):
         entries = list(Path("/proc").iterdir())
     except OSError:
         return True
-    own, names = _own_chain(), _session_names()
+    from .cli import find_real_bin
+
+    found = find_real_bin()
+    own, real = _own_chain(), Path(found).resolve() if found else None
     for entry in entries:
         if not entry.name.isdigit() or int(entry.name) in own:
             continue
         try:
-            if (entry / "comm").read_text().strip() not in names:
+            if not _is_session(entry, real):
                 continue
             cwd = os.readlink(entry / "cwd")
         except OSError:

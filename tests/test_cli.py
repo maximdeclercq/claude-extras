@@ -176,14 +176,14 @@ def test_real_bin_falls_back_to_the_newest_native_version(tmp_path, monkeypatch)
     monkeypatch.setenv("PATH", str(ours))
     monkeypatch.delenv("CLAUDE_REAL_BIN", raising=False)
     monkeypatch.setattr(cli.sys, "argv", [str(wrapper)])
-    monkeypatch.setattr(cli.Path, "home", staticmethod(lambda: tmp_path))
+    monkeypatch.setattr(cli, "NATIVE_VERSIONS", versions)
     assert cli.real_bin() == str(versions / "2.1.210"), "numeric order, whole versions only"
 
 
 def test_real_bin_dies_with_nothing_to_run(tmp_path, monkeypatch):
     monkeypatch.setenv("PATH", "")
     monkeypatch.delenv("CLAUDE_REAL_BIN", raising=False)
-    monkeypatch.setattr(cli.Path, "home", staticmethod(lambda: tmp_path))
+    monkeypatch.setattr(cli, "NATIVE_VERSIONS", tmp_path / "no-versions")
     with pytest.raises(SystemExit):
         cli.real_bin()
 

@@ -18,6 +18,7 @@ STATE = CONFIG / "state"
 TERMINAL = CONFIG / "terminal"
 LAUNCH_LOG = STATE / "launches"
 DEFAULT_DIR = HOME / ".claude"
+GIT_TIMEOUT = 5
 
 # Names that select a scope, so they can never also name an account.
 RESERVED = frozenset({"default", "all"})
@@ -247,8 +248,8 @@ def project_root(directory=None):
     try:
         out = subprocess.run(
             ["git", "-C", directory, "rev-parse", "--show-toplevel"],
-            capture_output=True, text=True, check=True,
+            capture_output=True, text=True, check=True, timeout=GIT_TIMEOUT,
         )
         return out.stdout.strip() or directory
-    except (OSError, subprocess.CalledProcessError):
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
         return directory
