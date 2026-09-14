@@ -76,10 +76,6 @@ on a session started for a terminal, and so is a transcript rebuilt from
 `history.jsonl` after the retention sweep, which holds prompts and no replies. The
 title is the one Claude Code generated, else the first prompt you typed.
 
-The directory shown is the one you typed. Claude Code resolves symlinks before
-writing a transcript, so each launch logs the shell's `$PWD` to
-`~/.config/claude-extras/state/launches` and `resume` prefers that.
-
 ## search
 
 ```

@@ -7,7 +7,6 @@ import time
 
 from . import chats, export, sessions, spawn
 from .accounts import (
-    LAUNCH_LOG,
     AccountError,
     known_accounts,
     resolve_account,
@@ -90,8 +89,7 @@ def list_rows(account, limit, tidy=True):
         under = str(chats.chats_root(account))
     except AccountError:
         return []
-    logical = sessions.load_logical_map(LAUNCH_LOG)
-    rows = sessions.sessions_for(account, config_dir, logical, limit, under=under)
+    rows = sessions.sessions_for(account, config_dir, limit, under=under)
     rows.sort(key=lambda r: r["activity"], reverse=True)
     return rows[:limit]
 

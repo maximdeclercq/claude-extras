@@ -178,7 +178,7 @@ def render(row, fmt="md", include_tools=False):
     meta = {
         "title": row.get("title") or row["id"],
         "account": row["account"],
-        "dir": row.get("dir") or row.get("real") or "",
+        "dir": row["real"],
         "id": row["id"],
         "exported_at": datetime.now().astimezone().strftime("%Y-%m-%d %H:%M"),
     }

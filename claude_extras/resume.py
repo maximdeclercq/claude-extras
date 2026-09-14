@@ -53,12 +53,11 @@ def here():
 
 def collect(scope, want, under=None):
     """Rows for an account scope, newest first across every account in it."""
-    from .accounts import LAUNCH_LOG, select_accounts
+    from .accounts import select_accounts
 
-    logical = sessions.load_logical_map(LAUNCH_LOG)
     rows = []
     for name, config_dir in select_accounts(scope):
-        rows += sessions.sessions_for(name, config_dir, logical, want, under=under)
+        rows += sessions.sessions_for(name, config_dir, want, under=under)
     rows.sort(key=lambda r: r["activity"], reverse=True)
     # a row picked by number stays reachable without repeating --limit
     return rows[:want]

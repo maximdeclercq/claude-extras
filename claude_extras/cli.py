@@ -2,25 +2,20 @@
 
 import os
 import sys
-import time
 from pathlib import Path
 
 from .accounts import (
     DENY,
-    LAUNCH_LOG,
     AccountError,
     account_exists,
     bind_env,
     check_name,
     ensure_account_dir,
-    private_dir,
     resolve_account,
     unknown_account,
 )
 from .args import take_value
 
-LOG_LIMIT = 5000
-LOG_KEEP = 2000
 NATIVE_VERSIONS = Path.home() / ".local" / "share" / "claude" / "versions"
 
 # Verb to the module that implements it. One table, so a verb cannot exist in the
@@ -133,28 +128,6 @@ def bind_account(name):
     bind_env(name)
 
 
-def record_launch(account, cwd):
-    """Log the logical cwd so `claude resume` can show the path actually typed."""
-    try:
-        real = str(Path(cwd).resolve())
-    except OSError:
-        real = cwd
-    line = f"{int(time.time())}\t{account}\t{real}\t{cwd}"
-    try:
-        private_dir("state")
-        lines = LAUNCH_LOG.read_text(errors="replace").splitlines() \
-            if LAUNCH_LOG.is_file() else []
-        if lines and lines[-1].split("\t")[-1] == cwd:
-            return
-        if len(lines) + 1 > LOG_LIMIT:
-            LAUNCH_LOG.write_text("\n".join((lines + [line])[-LOG_KEEP:]) + "\n")
-            return
-        with LAUNCH_LOG.open("a") as fh:
-            fh.write(line + "\n")
-    except OSError:
-        pass
-
-
 def take_account_flag(argv):
     """Strip --account/-a from anywhere in argv. claude has no such native flag."""
     forced, rest, index = None, [], 0
@@ -181,7 +154,6 @@ def launch(argv):
     check_dir(cwd)
     account = forced or resolve_account(cwd)
     bind_account(account)
-    record_launch(account, cwd)
     binary = real_bin()
     os.execv(binary, [binary, *rest])
 

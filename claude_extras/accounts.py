@@ -16,7 +16,6 @@ ROUTES = CONFIG / "routes"
 DENY = CONFIG / "deny"
 STATE = CONFIG / "state"
 TERMINAL = CONFIG / "terminal"
-LAUNCH_LOG = STATE / "launches"
 DEFAULT_DIR = HOME / ".claude"
 GIT_TIMEOUT = 5
 

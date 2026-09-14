@@ -79,44 +79,6 @@ def test_check_dir_allows_everything_without_a_deny_file(deny, monkeypatch):
     cli.check_dir(f"{deny}/anywhere")
 
 
-def test_record_launch_dedupes_consecutive_launches(tmp_path, monkeypatch):
-    log = tmp_path / "launches"
-    monkeypatch.setattr(cli, "LAUNCH_LOG", log)
-    cli.record_launch("acme", str(tmp_path))
-    cli.record_launch("acme", str(tmp_path))
-    assert len(log.read_text().splitlines()) == 1
-
-
-def test_record_launch_records_a_changed_directory(tmp_path, monkeypatch):
-    log = tmp_path / "launches"
-    monkeypatch.setattr(cli, "LAUNCH_LOG", log)
-    other = tmp_path / "other"
-    other.mkdir()
-    cli.record_launch("acme", str(tmp_path))
-    cli.record_launch("acme", str(other))
-    lines = log.read_text().splitlines()
-    assert len(lines) == 2
-    assert lines[-1].split("\t")[-1] == str(other)
-
-
-def test_record_launch_keeps_the_log_bounded(tmp_path, monkeypatch):
-    log = tmp_path / "launches"
-    monkeypatch.setattr(cli, "LAUNCH_LOG", log)
-    monkeypatch.setattr(cli, "LOG_LIMIT", 10)
-    monkeypatch.setattr(cli, "LOG_KEEP", 4)
-    log.write_text("".join(f"0\tacme\t/x/{i}\t/x/{i}\n" for i in range(20)))
-    cli.record_launch("acme", "/fresh")
-    lines = log.read_text().splitlines()
-    assert len(lines) == 4
-    assert lines[-1].endswith("/fresh")
-
-
-def test_record_launch_survives_an_unwritable_log(tmp_path, monkeypatch):
-    """A launch must never fail because its bookkeeping could not be written."""
-    monkeypatch.setattr(cli, "LAUNCH_LOG", tmp_path / "nodir" / "launches")
-    cli.record_launch("acme", str(tmp_path))
-
-
 def test_logical_cwd_prefers_the_symlinked_path(tmp_path, monkeypatch):
     real = tmp_path / "real"
     real.mkdir()

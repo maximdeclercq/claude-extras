@@ -117,18 +117,7 @@ def _user_text(msg):
     return text
 
 
-def load_logical_map(log_path):
-    """resolved-path -> logical-path, latest wins, from the wrapper's launch log."""
-    out = {}
-    if log_path and Path(log_path).is_file():
-        for line in Path(log_path).read_text(errors="replace").splitlines():
-            parts = line.split("\t")
-            if len(parts) >= 4 and parts[2] and parts[3]:
-                out[parts[2]] = parts[3]
-    return out
-
-
-def session_row(name, config_dir, path, mtime, logical, under=None):
+def session_row(name, config_dir, path, mtime, under=None):
     """One listing row, or None when the transcript is not a listable session."""
     meta = read_meta(path)
     if not meta or not meta["cwd"] or not meta["is_resumable"]:
@@ -146,7 +135,6 @@ def session_row(name, config_dir, path, mtime, logical, under=None):
         # A session with nothing said in it has only its file to date it.
         "activity": last_activity(path) or mtime,
         "real": meta["cwd"],
-        "dir": logical.get(meta["cwd"], meta["cwd"]),
         "branch": meta["branch"] or "-",
         "title": meta["title"],
     }
@@ -175,7 +163,7 @@ def transcripts(config_dir, under=None):
     return files
 
 
-def sessions_for(name, config_dir, logical, want, under=None):
+def sessions_for(name, config_dir, want, under=None):
     """Recent interactive sessions for one account, newest first."""
     out = []
     for mtime, path in transcripts(config_dir, under):
@@ -184,7 +172,7 @@ def sessions_for(name, config_dir, logical, want, under=None):
         # everything older behind it
         if want is not None and len(out) >= want and mtime <= min(r["activity"] for r in out):
             break
-        row = session_row(name, config_dir, path, mtime, logical, under)
+        row = session_row(name, config_dir, path, mtime, under)
         if row is None:
             continue
         out.append(row)
@@ -234,7 +222,7 @@ def render(rows, now, heading=None, resume="claude resume <#>"):
         # a branch nobody switched to says nothing; printing it buries the ones that do
         branch = "" if r["branch"] in DEFAULT_BRANCHES else r["branch"]
         body.append([f"{i:>3}", age(r["activity"], now), r["account"],
-                     _dir_label(r["dir"]), r["title"][:TITLE_WIDTH], branch])
+                     _dir_label(r["real"]), r["title"][:TITLE_WIDTH], branch])
     return "\n".join([head, *table(headers, body, elide=("account",)), "", f"resume:  {resume}"])
 
 

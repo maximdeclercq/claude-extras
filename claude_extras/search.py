@@ -6,7 +6,7 @@ import sys
 import time
 
 from . import sessions
-from .accounts import LAUNCH_LOG, AccountError, select_accounts
+from .accounts import AccountError, select_accounts
 from .args import parse, take_count
 
 SNIPPET_WIDTH = 60
@@ -109,7 +109,6 @@ def scan_file(path, pattern, raw, mine_only):
 
 def search(scope, pattern, mine_only=False, limit=DEFAULT_LIMIT, under=None):
     """Matching sessions, newest first, in `claude resume`'s row shape."""
-    logical = sessions.load_logical_map(LAUNCH_LOG)
     raw = byte_prefilter(pattern)
     rows = []
     for name, config_dir in select_accounts(scope):
@@ -124,7 +123,7 @@ def search(scope, pattern, mine_only=False, limit=DEFAULT_LIMIT, under=None):
             hit = scan_file(path, pattern, raw, mine_only)
             if not hit:
                 continue
-            row = sessions.session_row(name, config_dir, path, mtime, logical, under)
+            row = sessions.session_row(name, config_dir, path, mtime, under)
             if row is None:
                 continue
             rows.append({**row, "role": hit[0], "snippet": hit[1]})

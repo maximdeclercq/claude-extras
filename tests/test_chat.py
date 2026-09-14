@@ -127,14 +127,13 @@ def test_account_all_spans_every_account_newest_first(monkeypatch):
     monkeypatch.setattr(chat.chats, "tidy", lambda account, config_dir: None)
     monkeypatch.setattr(chat.chats, "chats_root", lambda account: f"/chats/{account}")
     monkeypatch.setattr(chat, "config_dir_for", lambda account: f"/cfg/{account}")
-    monkeypatch.setattr(chat.sessions, "load_logical_map", lambda path: {})
 
     per_account = {
         "default": [{"activity": 10, "account": "default", "title": "older"}],
         "acme": [{"activity": 99, "account": "acme", "title": "newest"}],
     }
     monkeypatch.setattr(chat.sessions, "sessions_for",
-                        lambda name, cfg, logical, want, under=None: per_account[name])
+                        lambda name, cfg, want, under=None: per_account[name])
 
     rows = chat.list_rows("all", limit=10)
     assert [r["title"] for r in rows] == ["newest", "older"]

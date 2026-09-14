@@ -53,7 +53,6 @@ per-file sum could not remove them.
 | `~/.config/claude-extras/deny` | directories where launching is refused |
 | `~/.config/claude-extras/accounts/<name>/` | per-account config and credentials |
 | `~/.config/claude-extras/auth/<name>.json` | credential snapshots (`auth save`) |
-| `~/.config/claude-extras/state/launches` | logical `$PWD` per launch, for `resume` |
 | `~/.claude/` | the default account, owned by Claude Code |
 | `<config_dir>/ratelimit.json` | cached plan-burn snapshot |
 | `<config_dir>/usage-cache.json` | parsed transcript turns |

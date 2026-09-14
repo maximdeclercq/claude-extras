@@ -34,7 +34,7 @@ def test_only_a_terminal_session_is_listed(tmp_path):
         _transcript(config / "projects" / "-work-acme" / name,
                     [_said("user", "hello", entrypoint=entry)])
 
-    listed = [Path(r["path"]).name for r in sessions.sessions_for("acme", config, {}, None)]
+    listed = [Path(r["path"]).name for r in sessions.sessions_for("acme", config, None)]
     assert listed == ["typed.jsonl"], listed
 
 
@@ -102,9 +102,9 @@ def test_session_row_under_a_directory_excludes_its_siblings(tmp_path, monkeypat
 
     monkeypatch.setattr(sessions, "last_activity", lambda path: 1.0)
     monkeypatch.setattr(sessions, "read_meta", meta("/w/workspace"))
-    assert sessions.session_row("a", tmp_path, tmp_path / "x.jsonl", 1.0, {}, under="/w/work") is None
+    assert sessions.session_row("a", tmp_path, tmp_path / "x.jsonl", 1.0, under="/w/work") is None
     monkeypatch.setattr(sessions, "read_meta", meta("/w/work/sub"))
-    assert sessions.session_row("a", tmp_path, tmp_path / "x.jsonl", 1.0, {}, under="/w/work")
+    assert sessions.session_row("a", tmp_path, tmp_path / "x.jsonl", 1.0, under="/w/work")
 
 
 def test_resume_is_a_launch_in_the_session_directory(tmp_path, monkeypatch):
@@ -160,7 +160,7 @@ def test_export_never_writes_tool_output(tmp_path):
          "message": {"role": "user", "content": [
              {"type": "tool_result", "content": "root:$6$SECRETHASH:19000:0:99999:7:::"}]}},
     ])
-    row = {"path": str(path), "title": "T", "account": "acme", "dir": "/work", "id": "s"}
+    row = {"path": str(path), "title": "T", "account": "acme", "real": "/work", "id": "s"}
 
     plain = export.render(row, "md")
     assert "SECRETHASH" not in plain
@@ -176,7 +176,7 @@ def test_export_never_writes_tool_output(tmp_path):
 def test_export_html_escapes_what_was_said(tmp_path):
     path = tmp_path / "s.jsonl"
     _transcript(path, [_said("user", "<script>alert(1)</script>")])
-    row = {"path": str(path), "title": "T & co", "account": "acme", "dir": "/w", "id": "s"}
+    row = {"path": str(path), "title": "T & co", "account": "acme", "real": "/w", "id": "s"}
 
     page = export.render(row, "html")
     assert "<script>alert(1)</script>" not in page
@@ -208,7 +208,7 @@ def test_sessions_carry_their_transcript_path(tmp_path):
     config = tmp_path / "cfg"
     path = config / "projects" / "-work-acme" / "sess.jsonl"
     _transcript(path, [_said("user", "hello", entrypoint="cli")])
-    rows = sessions.sessions_for("acme", config, {}, None)
+    rows = sessions.sessions_for("acme", config, None)
     assert rows and rows[0]["path"] == str(path)
 
 
