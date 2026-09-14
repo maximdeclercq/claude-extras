@@ -94,25 +94,30 @@ def test_search_rejects_a_bad_limit():
         search.main(["--limit=0", "x"])
 
 
-def test_resume_binds_the_row_account_not_its_config_dir(tmp_path, monkeypatch):
-    """A default row's config_dir is ~/.claude, and exporting that is a fresh
-    install to Claude Code, which keeps the default's state beside the directory,
-    not inside it. Every resume of a default session then ran onboarding."""
+def test_resume_is_a_launch_in_the_session_directory(tmp_path, monkeypatch):
+    """One launch path, so the account binding, the deny list and the launch log
+    all apply to a resume exactly as they do to a bare `claude`."""
     seen = {}
     monkeypatch.setattr(sessions.sys.stdout, "isatty", lambda: True)
-    monkeypatch.setattr(sessions.os, "chdir", lambda d: None)
-    monkeypatch.setattr(sessions.os, "execv",
-                        lambda b, argv: seen.update(env=dict(sessions.os.environ)))
-    monkeypatch.setattr("claude_extras.cli.real_bin", lambda: "/bin/true")
-    monkeypatch.setenv("CLAUDE_CONFIG_DIR", "/stale/from/the/shell")
-    row = {"real": str(tmp_path), "id": "abc", "account": "default",
-           "config_dir": str(tmp_path / ".claude")}
+    monkeypatch.setattr(sessions.os, "chdir", lambda d: seen.update(cwd=d))
+    monkeypatch.setattr("claude_extras.cli.launch", lambda argv: seen.update(argv=argv))
+    row = {"real": str(tmp_path), "id": "abc", "account": "acme", "config_dir": "/unused"}
     sessions.resume(row)
-    assert "CLAUDE_CONFIG_DIR" not in seen["env"]
+    assert seen == {"cwd": str(tmp_path), "argv": ["--account", "acme", "--resume", "abc"]}
 
-    row["account"] = "acme"
-    sessions.resume(row)
-    assert seen["env"]["CLAUDE_CONFIG_DIR"].endswith("/accounts/acme")
+
+def test_resume_honours_the_deny_list(tmp_path, monkeypatch):
+    from claude_extras import cli
+
+    deny = tmp_path / "deny"
+    deny.write_text(f"{tmp_path}\n")
+    monkeypatch.setattr(cli, "DENY", deny)
+    monkeypatch.setattr(cli.os, "execv", lambda *args: pytest.fail("a denied resume reached exec"))
+    monkeypatch.setattr(sessions.sys.stdout, "isatty", lambda: True)
+    monkeypatch.chdir(tmp_path)
+    row = {"real": str(tmp_path), "id": "abc", "account": "default", "config_dir": "/unused"}
+    with pytest.raises(SystemExit):
+        sessions.resume(row)
 
 
 def test_resume_refuses_a_session_whose_directory_is_gone(tmp_path):

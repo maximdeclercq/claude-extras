@@ -246,11 +246,8 @@ def resume(row):
     if not sys.stdout.isatty():
         spawn.spawn(row["real"], ["--resume", row["id"]], account=row["account"])
         return 0
-    from .accounts import bind_env
-    from .cli import real_bin
+    from .cli import launch
 
-    bind_env(row["account"])
     os.chdir(row["real"])
     os.environ["PWD"] = row["real"]
-    binary = real_bin()
-    os.execv(binary, [binary, "--resume", row["id"]])
+    launch(["--account", row["account"], "--resume", row["id"]])
