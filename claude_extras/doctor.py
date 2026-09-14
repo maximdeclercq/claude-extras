@@ -172,11 +172,6 @@ def _check_orphans(config, account_names):
                                     f"auth/{snap.name} has no account directory; claude auth "
                                     f"login {snap.stem} in a project seeds one, or remove it",
                                     path=str(snap)))
-    legacy = Path(config) / "profiles"
-    if legacy.is_dir() and any(legacy.iterdir()):
-        out.append(_finding(WARN, "legacy-profiles",
-                            f"{legacy} still holds pre-accounts state, including credentials",
-                            path=str(legacy)))
     return out
 
 
