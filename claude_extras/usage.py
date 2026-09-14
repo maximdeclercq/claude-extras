@@ -51,7 +51,6 @@ Report plan usage, token spend and time per account
 
 Options:
   -a, --account <name>    Report one account, or "all" (default: all)
-      --all               Shorthand for --account all
       --since <date>      Only count usage on or after YYYY-MM-DD
       --json              Output as JSON
   -h, --help              Display help for command
@@ -76,7 +75,7 @@ Examples:
 """
 
 
-FLAGS = {"--account": str, "-a": "--account", "--all": None, "--since": str, "--json": None}
+FLAGS = {"--account": str, "-a": "--account", "--since": str, "--json": None}
 
 
 def main(argv=None):
@@ -92,7 +91,7 @@ def main(argv=None):
         if arg not in VIEWS:
             raise AccountError(f"claude usage: unexpected argument '{arg}'")
         view = arg
-    scope = "all" if options["--all"] else options["--account"] or "all"
+    scope = options["--account"] or "all"
 
     focused = select_accounts(scope)
     names = {name for name, _ in focused}
