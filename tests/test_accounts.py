@@ -75,6 +75,13 @@ def test_binding_default_unsets_the_variable(config, monkeypatch):
     assert os.environ["CLAUDE_CONFIG_DIR"] == str(accounts.ACCOUNTS_DIR / "acme")
 
 
+@pytest.mark.parametrize("name", ["../escape", "a/b", ".hidden", ""])
+def test_an_account_name_is_one_directory_component(name):
+    """private_dir chmods whatever the name lands on, so it must land under accounts/."""
+    with pytest.raises(AccountError, match="cannot name an account"):
+        accounts.check_name(name)
+
+
 def test_config_dir_and_account_name_are_inverses(config):
     cfg = config["cfg"]
     assert accounts.config_dir_for("default") == config["default"]
@@ -96,6 +103,15 @@ def test_select_accounts_all_lists_default_first(config):
     make_account(config, "beta")
     got = [name for name, _ in accounts.select_accounts("all")]
     assert got == ["default", "acme", "beta"]
+
+
+def test_a_snapshot_alone_is_not_an_account(config):
+    """Every listing, the doctor and the launcher agree on what an account is."""
+    (config["cfg"] / "auth" / "moved.json").write_text("{}")
+    assert accounts.known_accounts() == []
+    assert not accounts.account_exists("moved")
+    with pytest.raises(AccountError, match="unknown account"):
+        accounts.select_accounts("moved")
 
 
 def test_select_accounts_named_and_unknown(config):

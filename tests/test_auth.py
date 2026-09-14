@@ -106,6 +106,7 @@ def test_save_writes_the_credential_private(config, tmp_path, monkeypatch):
     assert auth.cmd_save("acme") == 0
     snapshot = config["cfg"] / "auth" / "acme.json"
     assert snapshot.stat().st_mode & 0o777 == 0o600
+    assert accounts.account_exists("acme"), "a saved login is an account from then on"
 
 
 def test_save_refuses_to_replace_a_different_login(config, tmp_path, monkeypatch):

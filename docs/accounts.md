@@ -38,8 +38,7 @@ claude -a acme -p "summarize"  # same, non-interactive
 
 To remove an account, run `claude auth login default` in each project routed to
 it, then delete `~/.config/claude-extras/accounts/<name>/` and
-`auth/<name>.json`. The snapshot counts as the account still existing, so leaving
-it behind keeps the name selectable and the doctor reporting it.
+`auth/<name>.json`. A snapshot left behind is reported by the doctor.
 
 ## The model
 
@@ -76,9 +75,9 @@ a directory, not an identity, so the same email can be logged in four times and 
 directories can share one login.
 
 `claude auth save <name>` copies the active credentials to
-`~/.config/claude-extras/auth/<name>.json`. An account directory restores from that
-snapshot the first time it is seeded, which is how you move an account to a new
-machine.
+`~/.config/claude-extras/auth/<name>.json` and seeds the account from them. Copy
+that file to a new machine and `claude auth login <name>` there restores it, which
+is how an account moves.
 
 ### doctor
 

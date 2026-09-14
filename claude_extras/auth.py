@@ -9,9 +9,9 @@ from .accounts import (
     ACCOUNTS_DIR,
     CONFIG,
     DEFAULT_DIR,
-    RESERVED,
     AccountError,
     bind_env,
+    check_name,
     private_dir,
     project_root,
     read_routes,
@@ -87,8 +87,7 @@ def cmd_login(name):
         unbind_route(root)
         print(f"{root} -> default")
         return 0
-    if name in RESERVED:
-        raise AccountError(f"'{name}' selects a scope, so it cannot name an account")
+    check_name(name)
     seed_account_dir(name)
     bind_route(root, name)
     if (ACCOUNTS_DIR / name / ".credentials.json").is_file():
@@ -103,9 +102,7 @@ def cmd_save(name):
     if not name:
         print("usage: claude auth save <account>", file=sys.stderr)
         return 1
-    # Same guard as cmd_login, or `auth save all` writes a snapshot nothing can select
-    if name in RESERVED:
-        raise AccountError(f"'{name}' selects a scope, so it cannot name an account")
+    check_name(name)
     config_dir = os.environ.get("CLAUDE_CONFIG_DIR") or str(DEFAULT_DIR)
     source = os.path.join(config_dir, ".credentials.json")
     if not os.path.isfile(source):
@@ -119,6 +116,7 @@ def cmd_save(name):
         raise AccountError(f"auth/{name}.json holds a different login ({held}); remove it first")
     shutil.copy2(source, target)
     target.chmod(0o600)
+    seed_account_dir(name)
     print(f"saved account: {name} (login {login})")
     return 0
 

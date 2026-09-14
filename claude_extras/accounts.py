@@ -104,6 +104,14 @@ def bind_env(name):
         os.environ["CLAUDE_CONFIG_DIR"] = str(ACCOUNTS_DIR / name)
 
 
+def check_name(name):
+    """An account name that is safe as one directory component, or an error."""
+    if name in RESERVED:
+        raise AccountError(f"'{name}' selects a scope, so it cannot name an account")
+    if not name or name != Path(name).name or name.startswith("."):
+        raise AccountError(f"'{name}' cannot name an account; use one word without slashes")
+
+
 def config_dir_for(name):
     """Where an account keeps its Claude Code config. The default is ~/.claude itself."""
     return DEFAULT_DIR if name == "default" else ACCOUNTS_DIR / name
@@ -121,17 +129,15 @@ def state_file(config_dir):
 
 
 def known_accounts():
-    """Every selectable account name, sorted."""
-    names = set()
-    if ACCOUNTS_DIR.is_dir():
-        names.update(d.name for d in ACCOUNTS_DIR.iterdir() if d.is_dir())
-    if AUTH_DIR.is_dir():
-        names.update(f.stem for f in AUTH_DIR.glob("*.json"))
-    return sorted(names - RESERVED)
+    """Every account name, sorted. An account is a directory under accounts/."""
+    if not ACCOUNTS_DIR.is_dir():
+        return []
+    return sorted(d.name for d in ACCOUNTS_DIR.iterdir()
+                  if d.is_dir() and d.name not in RESERVED)
 
 
 def account_exists(name):
-    return (ACCOUNTS_DIR / name).is_dir() or (AUTH_DIR / f"{name}.json").is_file()
+    return (ACCOUNTS_DIR / name).is_dir()
 
 
 def unknown_account(name):
@@ -143,15 +149,10 @@ def unknown_account(name):
 def select_accounts(scope):
     """[(name, config_dir)] for a scope, which is an account name or "all"."""
     if scope == "all":
-        out = [("default", DEFAULT_DIR)]
-        if ACCOUNTS_DIR.is_dir():
-            out += [(d.name, d) for d in sorted(ACCOUNTS_DIR.iterdir()) if d.is_dir()]
-        return out
-    if scope == "default":
-        return [("default", DEFAULT_DIR)]
-    if not account_exists(scope):
+        return [(name, config_dir_for(name)) for name in ("default", *known_accounts())]
+    if scope != "default" and not account_exists(scope):
         raise unknown_account(scope)
-    return [(scope, ACCOUNTS_DIR / scope)]
+    return [(scope, config_dir_for(scope))]
 
 
 def _link(source, target):

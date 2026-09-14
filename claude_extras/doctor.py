@@ -169,8 +169,9 @@ def _check_orphans(config, account_names):
         for snap in sorted(auth_dir.glob("*.json")):
             if snap.stem not in account_names:
                 out.append(_finding(WARN, "orphan-snapshot",
-                                    f"auth/{snap.name} matches no account; holds a credential, "
-                                    "so remove it yourself", path=str(snap)))
+                                    f"auth/{snap.name} has no account directory; claude auth "
+                                    f"login {snap.stem} in a project seeds one, or remove it",
+                                    path=str(snap)))
     legacy = Path(config) / "profiles"
     if legacy.is_dir() and any(legacy.iterdir()):
         out.append(_finding(WARN, "legacy-profiles",

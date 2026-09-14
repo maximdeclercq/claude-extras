@@ -11,6 +11,7 @@ from .accounts import (
     AccountError,
     account_exists,
     bind_env,
+    check_name,
     ensure_account_dir,
     private_dir,
     resolve_account,
@@ -124,6 +125,7 @@ def check_dir(cwd):
 def bind_account(name):
     """Bind this process to an account, seeding it on first use."""
     if name != "default":
+        check_name(name)
         if not account_exists(name):
             raise unknown_account(name)
         ensure_account_dir(name)
