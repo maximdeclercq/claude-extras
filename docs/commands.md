@@ -184,7 +184,7 @@ Opus high | ctx 8% | 5h 23% (resets 14:00) | 7d 41% | default
 The fields are model and effort, context used, 5h burn with its reset time, 7d
 burn, and the account. Percentages turn yellow at 70% and red at 90%.
 `claude auth doctor --fix` wires it in with a `refreshInterval`, which keeps the
-snapshot fresh between messages, and that is what lets `usage` report percentages
-when no session is running. The payload carries `rate_limits` only for Pro, Max and
+snapshot fresh between messages, so `usage` can report percentages when no session
+is running. The payload carries `rate_limits` only for Pro, Max and
 Team accounts and only after the first API response, so the fields read `-` until
 then.
