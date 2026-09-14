@@ -8,7 +8,7 @@ from datetime import datetime
 from pathlib import Path
 
 from . import sessions
-from .accounts import AccountError, read_routes
+from .accounts import AccountError, read_routes, state_file
 
 CHATS_DIR_NAME = "chats"
 SLUG_MAX = 60
@@ -200,7 +200,7 @@ def _rewrite_cwd(path, old, new):
 
 def move_project_entry(config_dir, old_dir, new_dir):
     """Carry a directory's per-project state across a rename."""
-    path = Path(config_dir) / ".claude.json"
+    path = state_file(config_dir)
     try:
         data = json.loads(path.read_text())
     except (OSError, json.JSONDecodeError):

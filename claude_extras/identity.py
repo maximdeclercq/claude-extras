@@ -4,6 +4,8 @@ import hashlib
 import json
 from pathlib import Path
 
+from .accounts import state_file
+
 TIER_LABELS = {
     "default_claude_max_20x": "max 20x",
     "default_claude_max_5x": "max 5x",
@@ -18,15 +20,7 @@ def _read_json(path):
 
 
 def _account_state(config_dir):
-    """Claude Code's own state file for a config dir."""
-    inside = _read_json(Path(config_dir) / ".claude.json")
-    if inside is not None:
-        return inside
-    try:
-        is_default = Path(config_dir).resolve() == (Path.home() / ".claude").resolve()
-    except OSError:
-        is_default = False
-    return (_read_json(Path.home() / ".claude.json") or {}) if is_default else {}
+    return _read_json(state_file(config_dir)) or {}
 
 
 def _oauth(credentials_path):

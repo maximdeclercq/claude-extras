@@ -104,6 +104,22 @@ def bind_env(name):
         os.environ["CLAUDE_CONFIG_DIR"] = str(ACCOUNTS_DIR / name)
 
 
+def config_dir_for(name):
+    """Where an account keeps its Claude Code config. The default is ~/.claude itself."""
+    return DEFAULT_DIR if name == "default" else ACCOUNTS_DIR / name
+
+
+def account_of(config_dir):
+    """The account a CLAUDE_CONFIG_DIR value names, "default" for none or a foreign one."""
+    return Path(config_dir).name if config_dir and Path(config_dir).parent == ACCOUNTS_DIR else "default"
+
+
+def state_file(config_dir):
+    """Claude Code's own state file for a config dir, which for ~/.claude sits beside it."""
+    config_dir = Path(config_dir)
+    return HOME / ".claude.json" if config_dir == DEFAULT_DIR else config_dir / ".claude.json"
+
+
 def known_accounts():
     """Every selectable account name, sorted."""
     names = set()

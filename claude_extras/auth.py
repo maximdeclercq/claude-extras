@@ -95,7 +95,7 @@ def cmd_login(name):
         print(f"{root} -> {name} (already logged in)")
         return 0
     print(f"{root} -> {name}")
-    os.environ["CLAUDE_CONFIG_DIR"] = str(ACCOUNTS_DIR / name)
+    bind_env(name)
     native("login", [])
 
 

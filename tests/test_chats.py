@@ -219,6 +219,28 @@ def test_tidy_keeps_an_empty_chat_that_has_a_transcript(tmp_path, monkeypatch):
     assert (root / "2026-08-15-cheap-parking-near-paris").is_dir(), "should be renamed"
 
 
+def test_rename_carries_the_default_accounts_trust_too(tmp_path, monkeypatch):
+    """The default account's state file sits beside ~/.claude, not inside it, and
+    a rename that looked inside dropped the chat's trust and permissions silently."""
+    from claude_extras import accounts
+
+    monkeypatch.setattr(accounts, "HOME", tmp_path)
+    monkeypatch.setattr(accounts, "DEFAULT_DIR", tmp_path / ".claude")
+    config = tmp_path / ".claude"
+    config.mkdir()
+    old_dir = tmp_path / "chats" / "2026-08-15-untitled-2044"
+    old_dir.mkdir(parents=True)
+    beside = tmp_path / ".claude.json"
+    beside.write_text(json.dumps({"projects": {str(old_dir): {"hasTrustDialogAccepted": True}}}))
+
+    new_dir = chats.rename_chat(config, old_dir, "2026-08-15-hello-jetson-orin")
+
+    data = json.loads(beside.read_text())
+    assert str(old_dir) not in data["projects"]
+    assert data["projects"][str(new_dir)]["hasTrustDialogAccepted"] is True
+    assert not (config / ".claude.json").exists(), "nothing invents a state file inside"
+
+
 def test_rename_carries_trust_and_permissions(tmp_path):
     """Renaming must not make a chat ask to be trusted all over again."""
     config = tmp_path / "config"

@@ -10,6 +10,8 @@ import sys
 import time
 from datetime import UTC, datetime
 
+from .accounts import account_of, config_dir_for, resolve_account
+
 # Burn levels worth noticing. Anything below the first is not worth colouring.
 SNAPSHOT = "ratelimit.json"
 WARN_PCT, CRIT_PCT = 70, 90
@@ -84,14 +86,6 @@ def percent(value, use_color=True):
     return text
 
 
-def account_tag(config_dir):
-    """The account name a config dir belongs to, for the tail of the line."""
-    marker = os.sep + "accounts" + os.sep
-    if config_dir and marker in config_dir:
-        return config_dir.rsplit(marker, 1)[1].split(os.sep)[0]
-    return "default"
-
-
 def _clock(stamp):
     """A reset time as the wall clock the reader is looking at."""
     try:
@@ -114,7 +108,7 @@ def render(payload, config_dir, use_color=True):
     return (f"{name} {effort} | ctx {percent(context, use_color)} | "
             f"5h {percent(five.get('used_percentage'), use_color)}{tail} | "
             f"7d {percent(seven.get('used_percentage'), use_color)} | "
-            f"{account_tag(config_dir)}")
+            f"{account_of(config_dir)}")
 
 
 HELP = """Usage: claude status
@@ -140,7 +134,7 @@ def render_cached(config_dir):
     """The burn line from the cached snapshot, for someone who typed the command."""
     snap = read_snapshot(config_dir)
     if snap is None:
-        return (f"no burn recorded for {account_tag(config_dir)} yet "
+        return (f"no burn recorded for {account_of(config_dir)} yet "
                 "(wire the status line: claude status --help)")
     five, seven = snap.get("five_hour") or {}, snap.get("seven_day") or {}
     resets = _clock(five.get("resets_at"))
@@ -148,7 +142,7 @@ def render_cached(config_dir):
     return (f"5h {percent(five.get('used_percentage'))}"
             + (f" (resets {resets})" if resets else "")
             + f" | 7d {percent(seven.get('used_percentage'))}"
-            + f" | {account_tag(config_dir)}"
+            + f" | {account_of(config_dir)}"
             + (f"   as of {seen}" if seen else ""))
 
 
@@ -156,11 +150,10 @@ def main(argv):
     if any(arg in ("-h", "--help", "help") for arg in argv):
         print(HELP, end="")
         return 0
-    config_dir = os.environ.get("CLAUDE_CONFIG_DIR") or os.path.expanduser("~/.claude")
     payload = _payload()
-    # A payload means Claude Code is asking for the line under its prompt. No
-    # payload means a person or a script is asking what the burn is, and the
-    # cache is the only answer available without a live session.
+    # A session carries its account in the environment. Typed at a terminal there
+    # is none, and the directory says which account the person is in.
+    config_dir = os.environ.get("CLAUDE_CONFIG_DIR") or str(config_dir_for(resolve_account()))
     if payload is None:
         print(render_cached(config_dir))
         return 0

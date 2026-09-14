@@ -94,6 +94,27 @@ def test_search_rejects_a_bad_limit():
         search.main(["--limit=0", "x"])
 
 
+def test_resume_binds_the_row_account_not_its_config_dir(tmp_path, monkeypatch):
+    """A default row's config_dir is ~/.claude, and exporting that is a fresh
+    install to Claude Code, which keeps the default's state beside the directory,
+    not inside it. Every resume of a default session then ran onboarding."""
+    seen = {}
+    monkeypatch.setattr(sessions.sys.stdout, "isatty", lambda: True)
+    monkeypatch.setattr(sessions.os, "chdir", lambda d: None)
+    monkeypatch.setattr(sessions.os, "execv",
+                        lambda b, argv: seen.update(env=dict(sessions.os.environ)))
+    monkeypatch.setattr("claude_extras.cli.real_bin", lambda: "/bin/true")
+    monkeypatch.setenv("CLAUDE_CONFIG_DIR", "/stale/from/the/shell")
+    row = {"real": str(tmp_path), "id": "abc", "account": "default",
+           "config_dir": str(tmp_path / ".claude")}
+    sessions.resume(row)
+    assert "CLAUDE_CONFIG_DIR" not in seen["env"]
+
+    row["account"] = "acme"
+    sessions.resume(row)
+    assert seen["env"]["CLAUDE_CONFIG_DIR"].endswith("/accounts/acme")
+
+
 def test_resume_refuses_a_session_whose_directory_is_gone(tmp_path):
     """Every verb that resumes goes through here, so the guard lives here once."""
     row = {"real": str(tmp_path / "gone"), "id": "abc", "account": "default",
@@ -234,12 +255,27 @@ def test_status_never_writes_an_empty_snapshot_over_a_real_one():
 
 
 
-def test_status_tags_the_account_from_the_config_dir():
-    from claude_extras import status
+def test_status_typed_at_a_terminal_follows_the_directory(monkeypatch, capsys):
+    """No session, so no CLAUDE_CONFIG_DIR. The directory says which account."""
+    import io
 
-    assert status.account_tag("/home/u/.config/claude-extras/accounts/acme") == "acme"
-    assert status.account_tag("/home/u/.claude") == "default"
-    assert status.account_tag("") == "default"
+    from claude_extras import accounts, status
+
+    acme = accounts.ACCOUNTS_DIR / "acme"
+    acme.mkdir(parents=True, exist_ok=True)
+    (acme / "ratelimit.json").write_text(json.dumps({
+        "captured_at": 1786899600,
+        "five_hour": {"used_percentage": 26, "resets_at": 1786899600},
+        "seven_day": {"used_percentage": 16}}))
+    stdin = io.StringIO()
+    stdin.isatty = lambda: True
+    monkeypatch.setattr("sys.stdin", stdin)
+    monkeypatch.delenv("CLAUDE_CONFIG_DIR", raising=False)
+    monkeypatch.setattr(status, "resolve_account", lambda: "acme")
+
+    assert status.main([]) == 0
+    out = capsys.readouterr().out
+    assert "5h 26%" in out and "| acme" in out
 
 
 @pytest.mark.parametrize("payload", [

@@ -75,6 +75,15 @@ def test_binding_default_unsets_the_variable(config, monkeypatch):
     assert os.environ["CLAUDE_CONFIG_DIR"] == str(accounts.ACCOUNTS_DIR / "acme")
 
 
+def test_config_dir_and_account_name_are_inverses(config):
+    cfg = config["cfg"]
+    assert accounts.config_dir_for("default") == config["default"]
+    assert accounts.config_dir_for("acme") == cfg / "accounts" / "acme"
+    assert accounts.account_of(str(cfg / "accounts" / "acme")) == "acme"
+    assert accounts.account_of(None) == "default"
+    assert accounts.account_of("/somewhere/foreign") == "default", "a hand-set dir is not an account"
+
+
 def test_known_accounts_hides_reserved_words(config):
     make_account(config, "acme")
     (config["cfg"] / "auth" / "default.json").write_text("{}")
